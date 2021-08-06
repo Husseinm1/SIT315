@@ -1,0 +1,35 @@
+const uint8_t PIR_PIN = 2;
+const uint8_t LED_PIN = 13;
+
+volatile int motionState = 0;
+  uint8_t ledState = LOW;
+  uint8_t motionPrevState = LOW;
+
+void setup()
+{
+  
+  pinMode(13, OUTPUT);
+  pinMode(5, INPUT);
+  attachInterrupt(digitalPinToInterrupt(2), pin_ISR, CHANGE);
+  Serial.begin(9600); 
+}
+
+void loop()
+{
+}
+
+
+void pin_ISR()
+{
+  Serial.print(motionPrevState);
+  Serial.print(motionState);
+  Serial.print(ledState);
+  Serial.println("");
+  
+  motionState = digitalRead(PIR_PIN);
+  ledState = !ledState;
+  digitalWrite(LED_PIN, ledState);
+  
+  motionPrevState = motionState;
+ 
+}
