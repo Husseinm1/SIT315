@@ -1,0 +1,70 @@
+ volatile int motionState = 0;
+  uint8_t ledState = LOW;
+  uint8_t motionPrevState = LOW;
+
+void setup() {  
+  Serial.begin(9600);
+  pinMode(13, OUTPUT);
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
+  pinMode(6, INPUT);
+  startTimer();
+  
+  PCICR |= B00000100;			
+  PCMSK2 |= B0111000;			
+}
+
+void loop() { 
+  //your code here...
+}
+
+ISR (PCINT2_vect) 
+{
+  Serial.print(motionPrevState);
+  Serial.print(motionState);
+  Serial.print(ledState);
+  Serial.println("");
+  
+  motionState = digitalRead(6);
+  ledState = !ledState;
+  digitalWrite(13, ledState);
+  
+  motionPrevState = motionState;
+} 
+void startTimer(){
+  noInterrupts();
+  
+  double x;
+  double seconds = 0.5 ;
+  double frequency = 1/seconds;
+  Serial.println(seconds);
+   
+   
+  x = 15624/frequency; 
+  
+  
+  // Clear registers
+  TCCR1A = 0;
+  TCCR1B = 0;
+  TCNT1 = 0;
+  //  we want turn led 13 to blink every 4 seconds = 0.25 Hz
+//  0.5 = (16000000/((x+1)*1024));
+  //Set timer compare
+  OCR1A = x;
+  
+  TCCR1B |= (1 << CS12) | (1 << CS10);
+  // Output Compare Match A Interrupt Enable
+  TIMSK1 |= (1 << OCIE1A);
+  // CTC
+  TCCR1B |= (1 << WGM12);
+  
+  interrupts();
+  
+  
+}
+
+
+ISR(TIMER1_COMPA_vect){
+   digitalWrite(12, digitalRead(12) ^ 1);
+    
+}
